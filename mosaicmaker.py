@@ -33,17 +33,17 @@ def main():
 
     else:
         layout = [
-                    [sg.Text('Input', size=(15,1)), sg.In(size=(50,1), default_text="D:/video/908_ShowReel_2018_edit_14_MASTER.mp4"), sg.FileBrowse()],
-                    [sg.Text('Sensitivity (0=Auto)', size=(15,1)), sg.Slider(range=(0,100),default_value=60,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
-                    [sg.Text('Rows', size=(15,1)), sg.Slider(range=(1,30),default_value=6,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
-                    [sg.Text('Columns', size=(15,1)), sg.Slider(range=(1,30),default_value=6,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
-                    [sg.Text('Thumb Width', size=(15,1)), sg.In(size=(5,1), default_text=320)],
-                    [sg.Text('Thumb Height', size=(15,1)), sg.In(size=(5,1), default_text=180)],
-                    [sg.Text('Output Folder', size=(15,1)), sg.In(size=(50,1), default_text=os.getcwd()), sg.FolderBrowse()],
-                    [sg.Text('Output File', size=(15,1)), sg.In(size=(50,1), default_text="mosaic.jpg")],
-                    [sg.Text('Quality (2=Max)', size=(15,1)), sg.Slider(range=(2,31),default_value=4,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
-                    [sg.Checkbox('Also Save Single Images', default=False)],
-                    [sg.Checkbox('Show Result', default=True)],
+                    [sg.Text('Input', size=(15,1)), sg.In(size=(50,1), default_text="", enable_events=True, key="inputFileName"), sg.FileBrowse()],
+                    [sg.Text('Sensitivity (0=Auto)', size=(15,1)), sg.Slider(key="sensitivity",range=(0,100),default_value=60,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
+                    [sg.Text('Rows', size=(15,1)), sg.Slider(key="rows",range=(1,30),default_value=6,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
+                    [sg.Text('Columns', size=(15,1)), sg.Slider(key="columns",range=(1,30),default_value=6,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
+                    [sg.Text('Thumb Width', size=(15,1)), sg.In(key="thumbw",size=(5,1), default_text=320)],
+                    [sg.Text('Thumb Height', size=(15,1)), sg.In(key="thumbh",size=(5,1), default_text=180)],
+                    [sg.Text('Output Folder', size=(15,1)), sg.In(size=(50,1), default_text=os.getcwd(), key="outputFolder"), sg.FolderBrowse()],
+                    [sg.Text('Output File', size=(15,1)), sg.In(size=(50,1), default_text="mosaic.jpg", key="outputFileName")],
+                    [sg.Text('Quality (2=Max)', size=(15,1)), sg.Slider(key="quality",range=(2,31),default_value=4,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
+                    [sg.Checkbox('Also Save Single Images', default=False, key="keep")],
+                    [sg.Checkbox('Show Result', default=True, key="show")],
                     [sg.Button('Ok'), sg.Button('Cancel')] ]
 
         # Create the Window
@@ -51,31 +51,45 @@ def main():
         # Event Loop to process "events" and get the "values" of the inputs
         while True:
             event, values = window.read()
+            # print(event, values)
             if event in (None, 'Cancel'):	# if user closes window or clicks cancel
                 window.close()
                 return
             #print('You entered ', values)
-            args.in_filename    = values[0]
-            args.sensitivity    = str(float(values[1]) / 100.0) if values[1] > 0 else None
-            args.rows           = str(int(values[2]))
-            args.columns        = str(int(values[3]))
-            args.thumb_w        = str(int(values[4]))
-            args.thumb_h        = str(int(values[5]))
-            args.quality        = int(values[8])
-            args.keep           = values[9]
-            args.show           = values[10]
-            if values[6] == "":
-                values[6] = os.getcwd()
-            args.out_filename   = os.path.join(values[6],values[7])
+            if event == "Ok":
+                args.in_filename    = values["inputFileName"]
+                args.sensitivity    = str(float(values["sensitivity"]) / 100.0) if values["sensitivity"] > 0 else None
+                args.rows           = str(int(values["rows"]))
+                args.columns        = str(int(values["columns"]))
+                args.thumb_w        = str(int(values["thumbw"]))
+                args.thumb_h        = str(int(values["thumbh"]))
+                args.quality        = int(values["quality"])
+                args.keep           = values["keep"]
+                args.show           = values["show"]
+                if values["outputFileName"] == "":
+                    values["outputFileName"] = os.getcwd()
+                args.out_filename   = os.path.join(values["outputFolder"],values["outputFileName"])
+                
+                if args.in_filename is None or args.in_filename=="":
+                    sg.Popup("Missing input filename")
+                elif args.out_filename is None or args.out_filename=="" or values["outputFileName"]=="":
+                    sg.Popup("Missing output filename")
+                else:
+                    processVideo(args)
             
-            if args.in_filename is None or args.in_filename=="":
-                sg.Popup("Missing input filename")
-            elif args.out_filename is None or args.out_filename=="" or values[7]=="":
-                sg.Popup("Missing output filename")
-            else:
-                processVideo(args)
+            elif event == "inputFileName":
+                window["outputFileName"].update(buildOutputFilename(values["inputFileName"], values["outputFileName"]))
 
         window.close()
+
+def buildOutputFilename(s, previous):
+    base, filename = os.path.split(s)
+    basefile, _ = os.path.splitext(filename)
+    _, ext = os.path.splitext(previous)
+    if ext == "":
+        ext = ".jpg"
+    newFilename = f"{basefile}_mosaic{ext}"
+    return newFilename
 
 def frameListToString(frameList):
     frameListString = ""
@@ -85,7 +99,11 @@ def frameListToString(frameList):
             frameListString += "+"
     return frameListString
 
+def getBasicFrameList(every, imgcount):
+    return [(every*i) for i in range(imgcount)]
+
 def processVideo(args):
+    pprint(args)
     imgcount = int(args.rows) * int(args.columns)
     metadata=ffmpeg.probe(os.path.abspath(args.in_filename))
     pprint(metadata)
@@ -101,7 +119,7 @@ def processVideo(args):
 
     # Simple time interval framelist
     if args.sensitivity is None or args.sensitivity == 0:
-        frameList = [(every*i) for i in range(imgcount)]
+        frameList = getBasicFrameList(every, imgcount)
     
     # Run scene detect filter over video once to find scene changes,
     # then fill up with intermediate frames if not enough to fill mosaic
@@ -126,7 +144,11 @@ def processVideo(args):
                         frameTime = float(reResult.group(0))
                         frameList.append(int(frameTime * framerate))
 
-            if len(frameList) < imgcount:
+            if len(frameList) < imgcount/2:
+                frameList = frameList + (getBasicFrameList(every, imgcount))
+                frameList.sort()
+                #frameList = frameList[len(frameList)-imgcount:]
+            elif len(frameList) < imgcount:
                 counter = 0 
                 while len(frameList) < imgcount:
                     valA = frameList[counter]
@@ -142,10 +164,8 @@ def processVideo(args):
                 print('stderr:', e.stderr.decode('utf8'))
                 raise e
 
-
     frameListString = frameListToString(frameList)
-    print(frameListString)
-    print(frameList)
+    
     # ENCODE MOSAIC (based on list of frames)
 
     out, _ = (
