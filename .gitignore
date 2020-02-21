@@ -1,2 +1,6 @@
 ffprobe.exe
 ffmpeg.exe
+__pycache__/*
+dist/*
+build/*
+*.spec
