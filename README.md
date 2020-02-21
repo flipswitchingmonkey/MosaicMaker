@@ -30,10 +30,13 @@ Make sure ffmpeg.exe and ffprobe.exe are either somewhere in the path or in the 
       --show SHOW
 
 Here's what the GUI looks like:
-![GUI](https://github.com/flipswitchingmonkey/MosaicMaker/screenshots/Mosaic_GUI.png "MosaicMaker GUI")
+
+![](https://github.com/flipswitchingmonkey/MosaicMaker/blob/master/screenshots/Mosaic_GUI.png "MosaicMaker GUI")
 
 And this is what you get out of it:
-![GUI](https://github.com/flipswitchingmonkey/MosaicMaker/screenshots/Mosaic_Result.jpg "MosaicMaker Result")
+
+![](https://github.com/flipswitchingmonkey/MosaicMaker/blob/master/screenshots/Mosaic_Result.jpg "MosaicMaker Result")
 
 Also Save Single Images gives you every image seperately as well:
-![GUI](https://github.com/flipswitchingmonkey/MosaicMaker/screenshots/Mosaic_SaveImages.jpg "MosaicMaker Save Images")
+
+![](https://github.com/flipswitchingmonkey/MosaicMaker/blob/master/screenshots/Mosaic_SaveImages.jpg "MosaicMaker Save Images")
