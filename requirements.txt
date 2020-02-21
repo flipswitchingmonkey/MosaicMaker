@@ -1,3 +1,2 @@
 ffmpeg-python==0.2.0
-ffprobe-python==1.0.3
 PySimpleGUI==4.15.2
