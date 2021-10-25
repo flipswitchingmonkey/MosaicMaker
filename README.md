@@ -37,7 +37,7 @@ And this is what you get out of it:
 
 ![](https://github.com/flipswitchingmonkey/MosaicMaker/blob/master/screenshots/Mosaic_Result.jpg "MosaicMaker Result")
 
-Also Save Single Images gives you every image seperately as well:
+Also Save Single Images gives you every image separately as well:
 
 ![](https://github.com/flipswitchingmonkey/MosaicMaker/blob/master/screenshots/Mosaic_SaveImages.jpg "MosaicMaker Save Images")
 
