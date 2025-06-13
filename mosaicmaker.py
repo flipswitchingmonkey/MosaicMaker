@@ -33,7 +33,7 @@ def main():
         if args.in_filename is None:
             print("Missing input filename (-i)")
             print("Example: python scenedetect.py -i myvideo.mp4 -o result.jpg -s 0.6 -tw 160 -th 120")
-            exit
+            exit()
         args.sensitivity    = str(args.sensitivity)
         args.rows           = str(args.rows)
         args.columns        = str(args.columns)
@@ -50,7 +50,7 @@ def main():
                     [sg.Text('Rows', size=(15,1)), sg.Slider(key="rows",range=(1,30),default_value=args.rows,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
                     [sg.Text('Columns', size=(15,1)), sg.Slider(key="columns",range=(1,30),default_value=args.columns,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
                     [sg.Text('Thumb Dimensions', size=(15,1)),  sg.Text('Width',size=(5,1)), sg.In(key="thumbw",size=(5,1), default_text=args.thumb_w), sg.Text('Height',size=(5,1)), sg.In(key="thumbh",size=(5,1), default_text=args.thumb_h)],
-                    [sg.Text('Output Folder', size=(15,1)), sg.In(size=(50,1), default_text=os.getcwd(), key="outputFolder"), sg.FolderBrowse()],
+                    [sg.Text('Output Folder', size=(15,1)), sg.In(size=(50,1), default_text=os.path.join(os.getcwd(), 'output'), key="outputFolder"), sg.FolderBrowse()],
                     [sg.Text('Output File', size=(15,1)), sg.In(size=(50,1), default_text="mosaic.jpg", key="outputFileName")],
                     [sg.Text('Quality (2=Max)', size=(15,1)), sg.Slider(key="quality",range=(2,31),default_value=args.quality,size=(32,15),orientation='horizontal',font=('Helvetica', 10))],
                     [sg.Checkbox('Also Save Single Images', default=args.keep, key="keep")],
@@ -63,13 +63,17 @@ def main():
         _WINDOW = sg.Window('ffmpeg mosaic maker || 908', layout)
         # Event Loop to process "events" and get the "values" of the inputs
         while True:
-            event, values = _WINDOW.read()
+            if _WINDOW is None:
+                break
+            result = _WINDOW.read()
+            if result is None:
+                break
+            event, values = result
 
-            if event in (None, 'Close'):	# if user closes window or clicks Close
-                _WINDOW.close()
-                return
+            if event == sg.WINDOW_CLOSED or event == 'Quit' or event == 'Close':
+                break
 
-            if event == "Ok":
+            elif event == "Ok":
                 args.in_filename    = values["inputFileName"]
                 args.sensitivity    = str(float(values["sensitivity"]) / 100.0) if values["sensitivity"] > 0 else None
                 args.rows           = str(int(values["rows"]))
@@ -81,6 +85,9 @@ def main():
                 args.show           = values["show"]
                 if values["outputFileName"] == "":
                     values["outputFileName"] = os.getcwd()
+                if not os.path.exists(values["outputFolder"]):
+                    print(f"Creating missing output folder: {values["outputFolder"]}")
+                    os.makedirs(values["outputFolder"], exist_ok=True)
                 args.out_filename   = os.path.join(values["outputFolder"],values["outputFileName"])
                 
                 if args.in_filename is None or args.in_filename=="":
@@ -89,7 +96,7 @@ def main():
                     sg.Popup("Missing output filename")
                 else:
                     processVideo(args)
-            
+
             elif event == "inputFileName":
                 _WINDOW["outputFileName"].update(buildOutputFilename(values["inputFileName"], values["outputFileName"]))
 
@@ -297,6 +304,11 @@ def processVideo(args):
         _WINDOW.refresh()
 
     if args.show:
-        os.startfile(args.out_filename)
+        if sys.platform.startswith('win'):
+            os.startfile(args.out_filename)
+        elif sys.platform.startswith('darwin'):
+            subprocess.call(['open', args.out_filename])
+        else:
+            subprocess.call(['xdg-open', args.out_filename])
 
 main()

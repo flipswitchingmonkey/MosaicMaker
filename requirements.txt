@@ -1,2 +1,7 @@
 ffmpeg-python==0.2.0
-PySimpleGUI==4.15.2
+future==1.0.0
+pyasn1==0.6.1
+pysimplegui-4-foss==4.60.4.1
+rsa==4.9.1
+setuptools==78.1.1
+wheel==0.45.1
