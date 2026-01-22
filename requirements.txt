@@ -1,6 +1,6 @@
 ffmpeg-python==0.2.0
 future==1.0.0
-pyasn1==0.6.1
+pyasn1==0.6.2
 pysimplegui-4-foss==4.60.4.1
 rsa==4.9.1
 setuptools==78.1.1
